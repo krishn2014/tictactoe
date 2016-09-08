@@ -25,10 +25,10 @@ class TicTacToe:
             size: number of columns in tictactoe
         """
         self.size = size
-        self.remaining_moves = size * size
         self.board = []
         for i in range(self.size):
             self.board.append(['-' for i in range(self.size)])
+        self.empty_cells = range(size*size)
 
     def _is_winning_combination(self, combination, marker):
         """
@@ -45,6 +45,21 @@ class TicTacToe:
             if i != marker:
                 return False
         return True
+
+    def get_size(self):
+        return self.size
+
+    def get_board(self):
+        return self.board
+
+    def get_empty_cells(self):
+        return self.empty_cells
+
+    def get_marker(self, row, column):
+        return self.board[row-1][column-1]
+
+    def is_empty(self, row, column):
+        return (self.size*(row-1) + column-1) in self.empty_cells
 
     def display(self):
         """
@@ -105,7 +120,23 @@ class TicTacToe:
             raise InvalidMarkerException('please provide marker in %s' % MARKER)
         r, c = self.validate_move(move)
         self.board[r][c] = marker
-        self.remaining_moves -= 1
+        self.empty_cells.remove(self.size*r + c)
+
+    def make_move_cell(self, cell, marker):
+        """
+        Make a move to a given cell on the board.
+
+        Args:
+            cell: move to cell number
+        Returns:
+            True if move is made successfull
+        Raises:
+            InvalidMoveException for unsuccessfull move
+            InvalidMarkerException for invalid marker
+        """
+        r = cell / self.size + 1
+        c = cell % self.size + 1
+        return self.make_move("%s %s" % (r,c), marker)
 
     def is_winner(self, marker):
         """
@@ -138,7 +169,7 @@ class TicTacToe:
             if self._is_winning_combination(comb, marker):
                 return True
 
-        if  self.remaining_moves == 0:
+        if  len(self.empty_cells) == 0:
             raise TieGameException('Game Tied')
 
         return False
